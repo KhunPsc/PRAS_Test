@@ -3,75 +3,450 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ตรวจสอบใบเสร็จน้ำมัน</title>
+  <title>ระบบตรวจสอบข้อมูลใบเสร็จการเติมน้ำมัน</title>
   <style>
     :root{
-      --bg:#f4f7fb;
-      --card:#ffffff;
+      --bg:#f7f4ff;
+      --bg-2:#eef8ff;
+      --bg-3:#fff7ec;
+      --card:rgba(255,255,255,.78);
+      --card-solid:#ffffff;
       --text:#1f2937;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --primary:#2563eb;
-      --primary-2:#1d4ed8;
+      --muted:#667085;
+      --line:rgba(148,163,184,.22);
+
+      --primary:#5b7cff;
+      --primary-2:#4264f2;
+      --primary-soft:#e7edff;
+
       --success:#16a34a;
-      --warning:#d97706;
-      --danger:#dc2626;
-      --pending:#64748b;
-      --ready:#2563eb;
-      --saved:#16a34a;
-      --error:#dc2626;
-      --shadow:0 10px 30px rgba(0,0,0,.08);
-      --radius:18px;
+      --warning:#ea8b2f;
+      --danger:#ef4444;
+
+      --accent-orange-1:#ffd08a;
+      --accent-orange-2:#ffb347;
+      --accent-orange-3:#ff9838;
+      --accent-orange-4:#ff7a18;
+      --accent-orange-5:#ff6a00;
+
+      --chip-bg:rgba(255,255,255,.78);
+      --panel-bg:rgba(255,255,255,.72);
+      --preview-bg:#f8fafc;
+      --input-bg:rgba(255,255,255,.85);
+
+      --shadow:0 18px 50px rgba(84, 110, 255, .10), 0 8px 18px rgba(0,0,0,.05);
+      --shadow-soft:0 10px 30px rgba(0,0,0,.08);
+      --radius:22px;
+
+      --toggle-track:#e8eefc;
+      --toggle-thumb:#ffffff;
+      --toggle-text:#475569;
+    }
+
+    body.theme-dark{
+      --bg:#0f1324;
+      --bg-2:#101a32;
+      --bg-3:#1b1530;
+      --card:rgba(17,24,39,.72);
+      --card-solid:#111827;
+      --text:#e5eefc;
+      --muted:#94a3b8;
+      --line:rgba(148,163,184,.18);
+
+      --primary:#7c9bff;
+      --primary-2:#5f82ff;
+      --primary-soft:rgba(91,124,255,.16);
+
+      --success:#22c55e;
+      --warning:#fb923c;
+      --danger:#f87171;
+
+      --chip-bg:rgba(17,24,39,.72);
+      --panel-bg:rgba(17,24,39,.72);
+      --preview-bg:#0f172a;
+      --input-bg:rgba(15,23,42,.86);
+
+      --shadow:0 24px 60px rgba(0,0,0,.38), 0 6px 18px rgba(0,0,0,.22);
+      --shadow-soft:0 14px 36px rgba(0,0,0,.28);
+
+      --toggle-track:#1e293b;
+      --toggle-thumb:#0f172a;
+      --toggle-text:#e5eefc;
     }
 
     *{box-sizing:border-box}
     html,body{margin:0;padding:0}
     body{
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Thai", sans-serif;
-      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
       color:var(--text);
+      min-height:100vh;
+      position:relative;
+      overflow-x:hidden;
+      background:
+        radial-gradient(circle at 8% 14%, rgba(255,196,123,.36) 0, rgba(255,196,123,0) 22%),
+        radial-gradient(circle at 88% 12%, rgba(124,155,255,.26) 0, rgba(124,155,255,0) 24%),
+        radial-gradient(circle at 78% 84%, rgba(255,140,102,.14) 0, rgba(255,140,102,0) 24%),
+        linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 42%, var(--bg-3) 100%);
+      transition: background .35s ease, color .25s ease;
+    }
+
+    /* playful blobs / backdrop */
+    body::before,
+    body::after{
+      content:"";
+      position:fixed;
+      inset:auto;
+      pointer-events:none;
+      z-index:0;
+      filter: blur(2px);
+      opacity:.92;
+      transition:opacity .3s ease;
+    }
+    body::before{
+      width:420px;height:420px;
+      left:-120px;top:90px;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255,210,138,.85) 0 22%, transparent 23%),
+        radial-gradient(circle at 62% 42%, rgba(255,179,71,.85) 0 20%, transparent 21%),
+        radial-gradient(circle at 45% 62%, rgba(255,122,24,.50) 0 20%, transparent 21%),
+        radial-gradient(circle at 70% 70%, rgba(91,124,255,.30) 0 18%, transparent 19%);
+    }
+    body::after{
+      width:520px;height:520px;
+      right:-140px;bottom:-60px;
+      background:
+        radial-gradient(circle at 48% 38%, rgba(91,124,255,.24) 0 24%, transparent 25%),
+        radial-gradient(circle at 28% 62%, rgba(155,195,255,.24) 0 18%, transparent 19%),
+        radial-gradient(circle at 70% 62%, rgba(255,183,71,.24) 0 18%, transparent 19%);
+    }
+
+    .bg-grid{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity:.28;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.40), rgba(0,0,0,.10));
+    }
+    body.theme-dark .bg-grid{
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      opacity:.38;
     }
 
     .app{
-      max-width: 1320px;
+      max-width: 1450px;
       margin: 24px auto;
       padding: 0 16px 28px;
+      position:relative;
+      z-index:1;
     }
 
-    .header{
-      margin-bottom: 18px;
+    /* ===== Header / Brand ===== */
+    .header{margin-bottom:18px}
+    .brand{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+      background:linear-gradient(180deg, rgba(255,255,255,.38), rgba(255,255,255,.12));
+      border:1px solid rgba(255,255,255,.35);
+      box-shadow:var(--shadow);
+      border-radius:28px;
+      padding:18px 20px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    body.theme-dark .brand{
+      background:linear-gradient(180deg, rgba(17,24,39,.65), rgba(17,24,39,.35));
+      border-color:rgba(255,255,255,.06);
+    }
+
+    .brand-left{
+      display:flex;
+      align-items:flex-start;
+      gap:16px;
+      flex:1;
+      min-width:290px;
+    }
+
+    .brand-logo-wrap{
+      width:84px;
+      height:84px;
+      border-radius:24px;
+      background:
+        linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+      border:1px solid rgba(255,255,255,.8);
+      box-shadow:
+        0 14px 34px rgba(0,0,0,.08),
+        inset 0 1px 0 rgba(255,255,255,.9);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+    body.theme-dark .brand-logo-wrap{
+      background:linear-gradient(180deg,#1f2937 0%, #111827 100%);
+      border-color:rgba(255,255,255,.08);
+      box-shadow:
+        0 16px 34px rgba(0,0,0,.26),
+        inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .brand-logo{
+      max-width:64px;
+      max-height:64px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .brand-text{
+      flex:1;
+      min-width:280px;
     }
 
     .title{
-      font-size: 30px;
-      font-weight: 800;
-      margin:0 0 6px;
-    }
-
-    .subtitle{
       margin:0;
-      color:var(--muted);
-      font-size:14px;
+      font-weight:900;
+      letter-spacing:-0.02em;
+      line-height:1.08;
     }
 
-    .toolbar{
+    .title-gradient{
+      background:linear-gradient(135deg,
+        var(--accent-orange-1) 0%,
+        var(--accent-orange-2) 18%,
+        var(--accent-orange-3) 38%,
+        var(--accent-orange-4) 58%,
+        var(--accent-orange-5) 78%,
+        var(--accent-orange-2) 100%);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      -webkit-text-fill-color:transparent;
+      filter:
+        drop-shadow(0 1px 0 rgba(255,255,255,.68))
+        drop-shadow(0 6px 14px rgba(255,122,24,.18));
+      -webkit-text-stroke: 1px rgba(255,255,255,.14);
+    }
+    body.theme-dark .title-gradient{
+      filter:
+        drop-shadow(0 1px 0 rgba(255,255,255,.05))
+        drop-shadow(0 8px 16px rgba(255,122,24,.20));
+      -webkit-text-stroke: 1px rgba(255,255,255,.05);
+    }
+
+    .title-main{font-size:32px}
+    .title-sub{font-size:22px;margin-top:4px;opacity:.98}
+    .subtitle{margin:8px 0 0;color:var(--muted);font-size:14px}
+
+    .top-summary{
       display:flex;
       flex-wrap:wrap;
       gap:10px;
-      margin-top:16px;
+      margin-top:14px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--line);
+      background:var(--chip-bg);
+      backdrop-filter: blur(8px);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      color:var(--text);
+      font-weight:700;
+      box-shadow:0 6px 18px rgba(0,0,0,.04);
     }
 
+    /* ===== Header actions ===== */
+    .header-actions{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-left:auto;
+      align-self:flex-start;
+      flex-wrap:wrap;
+    }
+
+    .btn-link{
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .btn{
+      border:none;
+      border-radius:14px;
+      padding:12px 15px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .18s ease, background .18s ease, box-shadow .18s ease, opacity .18s ease, color .18s ease;
+    }
+    .btn:hover:not(:disabled){
+      transform:translateY(-1px);
+    }
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+      transform:none !important;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--primary) 0%, var(--primary-2) 100%);
+      color:#fff;
+      box-shadow:0 10px 22px rgba(91,124,255,.22);
+    }
+    .btn-primary:hover:not(:disabled){filter:brightness(1.02)}
+
+    .btn-secondary{
+      background:var(--primary-soft);
+      color:var(--primary-2);
+      box-shadow:0 6px 18px rgba(0,0,0,.04);
+    }
+    body.theme-dark .btn-secondary{
+      color:#dbe7ff;
+    }
+
+    .btn-success{
+      background:linear-gradient(135deg,#16a34a 0%, #22c55e 100%);
+      color:#fff;
+      box-shadow:0 10px 22px rgba(34,197,94,.20);
+    }
+    .btn-danger{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+    body.theme-dark .btn-danger{
+      background:rgba(239,68,68,.15);
+      color:#fecaca;
+    }
+    .btn-warning{
+      background:#fff7ed;
+      color:#9a3412;
+    }
+    body.theme-dark .btn-warning{
+      background:rgba(251,146,60,.14);
+      color:#fdba74;
+    }
+
+    .btn-sheet{
+      background:linear-gradient(135deg,#16a34a 0%, #22c55e 55%, #4ade80 100%);
+      color:#fff;
+      box-shadow:
+        0 10px 24px rgba(34,197,94,.22),
+        inset 0 1px 0 rgba(255,255,255,.18);
+    }
+
+    @media (max-width: 900px){
+      .header-actions{
+        width:100%;
+        margin-left:0;
+      }
+      .header-actions .btn-link{
+        width:auto;
+      }
+    }
+
+    /* ===== Theme Toggle ===== */
+    .theme-toggle{
+      position:relative;
+      width:82px;
+      height:44px;
+      border:none;
+      border-radius:999px;
+      background:var(--toggle-track);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.55),
+        0 10px 24px rgba(0,0,0,.08);
+      cursor:pointer;
+      transition:all .28s ease;
+      padding:0;
+      overflow:hidden;
+    }
+    .theme-toggle:hover{
+      transform:translateY(-1px);
+    }
+    .theme-toggle-track{
+      position:absolute;
+      inset:0;
+      border-radius:999px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.52), rgba(255,255,255,.12));
+    }
+    body.theme-dark .theme-toggle-track{
+      background:
+        linear-gradient(135deg, rgba(124,155,255,.18), rgba(15,23,42,.12));
+    }
+
+    .theme-toggle-thumb{
+      position:absolute;
+      top:4px;
+      left:4px;
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      background:var(--toggle-thumb);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:17px;
+      box-shadow:
+        0 8px 16px rgba(0,0,0,.12),
+        inset 0 1px 0 rgba(255,255,255,.72);
+      transition:transform .28s ease, background .28s ease, box-shadow .28s ease;
+    }
+    body.theme-dark .theme-toggle-thumb{
+      transform:translateX(38px);
+      box-shadow:
+        0 8px 18px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .theme-icon-sun,
+    .theme-icon-moon{
+      position:absolute;
+      font-size:15px;
+      transition:opacity .22s ease, transform .22s ease;
+    }
+    .theme-icon-sun{opacity:1; transform:scale(1)}
+    .theme-icon-moon{opacity:0; transform:scale(.6)}
+    body.theme-dark .theme-icon-sun{opacity:0; transform:scale(.6)}
+    body.theme-dark .theme-icon-moon{opacity:1; transform:scale(1)}
+
+    .theme-toggle-label{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 12px;
+      color:var(--toggle-text);
+      font-size:13px;
+      font-weight:800;
+      pointer-events:none;
+      opacity:.75;
+    }
+
+    /* layout */
     .layout{
       display:grid;
-      grid-template-columns: 360px 1fr 430px;
+      grid-template-columns: 340px 1fr 470px;
       gap:16px;
       align-items:start;
     }
-
-    @media (max-width: 1200px){
-      .layout{
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 1280px){
+      .layout{grid-template-columns:1fr}
     }
 
     .card{
@@ -80,11 +455,18 @@
       border-radius:var(--radius);
       box-shadow:var(--shadow);
       overflow:hidden;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
 
     .card-header{
       padding:18px 18px 12px;
-      border-bottom:1px solid #f1f5f9;
+      border-bottom:1px solid rgba(255,255,255,.24);
+      background:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.02));
+    }
+    body.theme-dark .card-header{
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
     }
 
     .card-title{
@@ -92,123 +474,138 @@
       font-size:18px;
       font-weight:800;
     }
-
     .card-desc{
       margin:0;
       color:var(--muted);
       font-size:13px;
     }
+    .card-body{padding:18px}
 
-    .card-body{
-      padding:18px;
-    }
+    .hidden{display:none !important}
 
-    .dropzone{
-      border:2px dashed #cbd5e1;
-      border-radius:18px;
-      background:#f8fafc;
-      padding:24px 16px;
-      text-align:center;
-      transition:.2s ease;
-      cursor:pointer;
-    }
-
-    .dropzone.dragover{
-      border-color:#60a5fa;
-      background:#eff6ff;
-    }
-
-    .dropzone strong{
+    /* upload panel */
+    .upload-panel{
       display:block;
-      margin-bottom:6px;
-      font-size:16px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.64), rgba(255,255,255,.28));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+      padding:18px;
+      cursor:pointer;
+      transition:border-color .2s ease, transform .18s ease, background .2s ease, box-shadow .2s ease;
+    }
+    .upload-panel:hover{
+      transform:translateY(-1px);
+      border-color:rgba(91,124,255,.32);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.9),
+        0 10px 24px rgba(91,124,255,.12);
+    }
+    .upload-panel.dragover,
+    .upload-panel.is-dragover{
+      border-color:#60a5fa;
+      background:linear-gradient(180deg, rgba(239,246,255,.94), rgba(255,255,255,.50));
+      box-shadow:0 10px 26px rgba(96,165,250,.15);
+    }
+    body.theme-dark .upload-panel{
+      background:linear-gradient(180deg, rgba(30,41,59,.66), rgba(17,24,39,.46));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+    }
+    body.theme-dark .upload-panel.dragover,
+    body.theme-dark .upload-panel.is-dragover{
+      background:linear-gradient(180deg, rgba(37,99,235,.18), rgba(17,24,39,.58));
     }
 
-    .dropzone p{
-      margin:0;
+    .upload-top{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    .upload-icon-wrap{
+      width:60px;
+      height:60px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      background:linear-gradient(135deg, rgba(255,183,71,.18), rgba(91,124,255,.16));
+      color:var(--primary-2);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+    }
+    body.theme-dark .upload-icon-wrap{
+      color:#bfd1ff;
+      background:linear-gradient(135deg, rgba(255,183,71,.14), rgba(91,124,255,.18));
+    }
+    .upload-icon{
+      width:28px;height:28px;
+      display:block;
+    }
+
+    .upload-title{
+      font-size:16px;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+    .upload-subtitle{
       color:var(--muted);
       font-size:13px;
       line-height:1.6;
     }
 
-    .hidden{
-      display:none !important;
+    .upload-bottom{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:14px;
     }
-
-    .btn{
-      border:none;
-      border-radius:12px;
-      padding:12px 15px;
-      font-size:14px;
+    .upload-pill{
+      font-size:12px;
       font-weight:800;
-      cursor:pointer;
-      transition:.18s ease;
+      color:var(--text);
+      background:var(--chip-bg);
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:7px 10px;
     }
 
-    .btn:disabled{
-      opacity:.6;
-      cursor:not-allowed;
+    .toolbar,.actions-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
     }
-
-    .btn-primary{
-      background:var(--primary);
-      color:#fff;
-    }
-
-    .btn-primary:hover:not(:disabled){
-      background:var(--primary-2);
-    }
-
-    .btn-secondary{
-      background:#eef2ff;
-      color:#3730a3;
-    }
-
-    .btn-secondary:hover:not(:disabled){
-      background:#e0e7ff;
-    }
-
-    .btn-success{
-      background:var(--success);
-      color:#fff;
-    }
-
-    .btn-danger{
-      background:#fee2e2;
-      color:#991b1b;
-    }
-
-    .btn-warning{
-      background:#fff7ed;
-      color:#9a3412;
-    }
+    .toolbar{margin-top:14px}
 
     .queue-list{
       display:flex;
       flex-direction:column;
       gap:10px;
-      max-height: 70vh;
+      max-height:74vh;
       overflow:auto;
       padding-right:2px;
+      margin-top:14px;
     }
-
     .queue-item{
       border:1px solid var(--line);
-      border-radius:14px;
+      border-radius:16px;
       padding:12px;
-      background:#fff;
+      background:var(--panel-bg);
       cursor:pointer;
       transition:.18s ease;
+      backdrop-filter: blur(8px);
     }
-
     .queue-item:hover{
-      border-color:#bfdbfe;
-      box-shadow:0 6px 18px rgba(37,99,235,.08);
+      border-color:rgba(91,124,255,.28);
+      box-shadow:0 8px 22px rgba(91,124,255,.10);
     }
-
     .queue-item.active{
-      border-color:#60a5fa;
-      background:#eff6ff;
+      border-color:#7fa0ff;
+      background:linear-gradient(180deg, rgba(236,242,255,.88), rgba(255,255,255,.78));
+      box-shadow:0 12px 26px rgba(91,124,255,.10);
+    }
+    body.theme-dark .queue-item.active{
+      background:linear-gradient(180deg, rgba(37,99,235,.14), rgba(17,24,39,.76));
     }
 
     .queue-top{
@@ -218,14 +615,12 @@
       align-items:flex-start;
       margin-bottom:6px;
     }
-
     .queue-name{
       font-size:14px;
       font-weight:700;
       line-height:1.4;
       word-break:break-word;
     }
-
     .queue-meta{
       color:var(--muted);
       font-size:12px;
@@ -241,20 +636,20 @@
       font-size:11px;
       font-weight:800;
       white-space:nowrap;
+      border:1px solid transparent;
     }
+    .badge.pending{background:#f1f5f9;color:#475569}
+    .badge.processing{background:#dbeafe;color:#1d4ed8}
+    .badge.ready{background:#dbeafe;color:#1d4ed8}
+    .badge.saved{background:#dcfce7;color:#166534}
+    .badge.error{background:#fee2e2;color:#991b1b}
+    body.theme-dark .badge.pending{background:rgba(148,163,184,.14);color:#cbd5e1}
+    body.theme-dark .badge.processing,
+    body.theme-dark .badge.ready{background:rgba(59,130,246,.18);color:#bfdbfe}
+    body.theme-dark .badge.saved{background:rgba(34,197,94,.16);color:#bbf7d0}
+    body.theme-dark .badge.error{background:rgba(239,68,68,.16);color:#fecaca}
 
-    .badge.pending{background:#f1f5f9;color:#475569;}
-    .badge.processing{background:#dbeafe;color:#1d4ed8;}
-    .badge.ready{background:#dbeafe;color:#1d4ed8;}
-    .badge.saved{background:#dcfce7;color:#166534;}
-    .badge.error{background:#fee2e2;color:#991b1b;}
-
-    .queue-actions{
-      display:flex;
-      gap:8px;
-      margin-top:10px;
-    }
-
+    .queue-actions{display:flex;gap:8px;margin-top:10px}
     .mini-btn{
       border:none;
       border-radius:10px;
@@ -262,37 +657,48 @@
       font-size:12px;
       font-weight:800;
       cursor:pointer;
+      transition:transform .16s ease, opacity .16s ease;
     }
-
-    .mini-btn.remove{
-      background:#fef2f2;
-      color:#991b1b;
-    }
-
-    .mini-btn.select{
-      background:#eff6ff;
-      color:#1d4ed8;
-    }
+    .mini-btn:hover{transform:translateY(-1px)}
+    .mini-btn.remove{background:#fef2f2;color:#991b1b}
+    .mini-btn.select{background:#eff6ff;color:#1d4ed8}
+    body.theme-dark .mini-btn.remove{background:rgba(239,68,68,.16);color:#fecaca}
+    body.theme-dark .mini-btn.select{background:rgba(59,130,246,.16);color:#bfdbfe}
 
     .preview-box{
-      min-height: 520px;
+      min-height: 460px;
       border:1px solid var(--line);
-      border-radius:18px;
-      background:#f8fafc;
+      border-radius:22px;
+      background:linear-gradient(180deg, rgba(255,255,255,.46), var(--preview-bg));
       display:flex;
       align-items:center;
       justify-content:center;
       overflow:hidden;
       position:relative;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+    }
+    body.theme-dark .preview-box{
+      background:linear-gradient(180deg, rgba(255,255,255,.02), var(--preview-bg));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
 
+    .preview-image-wrap{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:auto;
+      padding:16px;
+    }
     .preview-box img{
       max-width:100%;
-      max-height:700px;
+      max-height:760px;
       object-fit:contain;
       display:block;
+      transform-origin:center center;
+      transition:transform .15s ease;
     }
-
     .preview-placeholder{
       text-align:center;
       color:var(--muted);
@@ -300,110 +706,94 @@
       line-height:1.7;
       padding:28px;
     }
-
-    .pdf-box{
-      text-align:center;
-      padding:28px;
-    }
-
-    .pdf-box .icon{
-      font-size:64px;
-      margin-bottom:12px;
-    }
-
-    .section-gap{
-      margin-top:16px;
-    }
+    .pdf-box{text-align:center;padding:28px}
+    .pdf-box .icon{font-size:64px;margin-bottom:12px}
+    .section-gap{margin-top:16px}
 
     .status-panel{
       display:none;
       margin-top:14px;
-      border-radius:14px;
+      border-radius:16px;
       padding:12px 14px;
       font-size:14px;
       white-space:pre-wrap;
       line-height:1.6;
+      border:1px solid transparent;
+      box-shadow:0 6px 18px rgba(0,0,0,.04);
     }
-
-    .status-panel.info{display:block;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
-    .status-panel.success{display:block;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
-    .status-panel.error{display:block;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
-    .status-panel.warn{display:block;background:#fffbeb;color:#92400e;border:1px solid #fde68a;}
+    .status-panel.info{display:block;background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+    .status-panel.success{display:block;background:#f0fdf4;color:#166534;border-color:#bbf7d0}
+    .status-panel.error{display:block;background:#fef2f2;color:#991b1b;border-color:#fecaca}
+    .status-panel.warn{display:block;background:#fffbeb;color:#92400e;border-color:#fde68a}
+    body.theme-dark .status-panel.info{background:rgba(59,130,246,.14);color:#bfdbfe;border-color:rgba(96,165,250,.24)}
+    body.theme-dark .status-panel.success{background:rgba(34,197,94,.14);color:#bbf7d0;border-color:rgba(74,222,128,.20)}
+    body.theme-dark .status-panel.error{background:rgba(239,68,68,.14);color:#fecaca;border-color:rgba(248,113,113,.22)}
+    body.theme-dark .status-panel.warn{background:rgba(251,146,60,.14);color:#fdba74;border-color:rgba(251,191,36,.18)}
 
     .form-grid{
       display:grid;
       grid-template-columns:1fr 1fr;
       gap:12px;
     }
-
-    @media (max-width: 680px){
-      .form-grid{
-        grid-template-columns:1fr;
-      }
+    @media (max-width:680px){
+      .form-grid{grid-template-columns:1fr}
     }
-
     .field{
       display:flex;
       flex-direction:column;
       gap:6px;
       margin-bottom:12px;
     }
-
-    .field.full{
-      grid-column:1 / -1;
-    }
-
+    .field.full{grid-column:1 / -1}
     .field label{
       font-size:13px;
       font-weight:700;
-      color:#374151;
+      color:var(--text);
     }
-
-    .field input{
+    .field input,.field textarea{
       width:100%;
       border:1px solid var(--line);
-      border-radius:12px;
+      border-radius:14px;
       padding:12px 14px;
       font-size:14px;
       outline:none;
-      background:#fff;
+      background:var(--input-bg);
+      color:var(--text);
+      transition:border-color .18s ease, box-shadow .18s ease, background .18s ease;
     }
-
-    .field input:focus{
+    .field textarea{
+      min-height:180px;
+      resize:vertical;
+      font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
+      line-height:1.6;
+    }
+    .field input:focus,.field textarea:focus{
       border-color:#93c5fd;
       box-shadow:0 0 0 4px rgba(59,130,246,.12);
     }
 
     .summary{
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns:repeat(3,1fr);
       gap:10px;
       margin-top:10px;
     }
-
-    @media (max-width: 680px){
-      .summary{
-        grid-template-columns:1fr;
-      }
+    @media (max-width:680px){
+      .summary{grid-template-columns:1fr}
     }
-
     .summary-card{
       border:1px solid var(--line);
-      border-radius:14px;
+      border-radius:16px;
       padding:12px;
-      background:#fafafa;
+      background:linear-gradient(180deg, rgba(255,255,255,.50), rgba(255,255,255,.16));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.62);
     }
-
-    .summary-label{
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:6px;
+    body.theme-dark .summary-card{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
-
-    .summary-value{
-      font-size:18px;
-      font-weight:800;
-    }
+    .summary-label{font-size:12px;color:var(--muted);margin-bottom:6px}
+    .summary-value{font-size:18px;font-weight:800}
 
     .empty-note{
       font-size:14px;
@@ -412,116 +802,208 @@
       text-align:center;
       padding:20px;
     }
-
-    .top-summary{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:12px;
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:999px;
-      padding:8px 12px;
-      font-size:12px;
-      color:#475569;
-      font-weight:700;
-    }
-
-    .actions-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-
     .small{
       color:var(--muted);
       font-size:12px;
       line-height:1.6;
     }
+
+    /* icon buttons */
+    .icon-btn{
+      min-width:48px;
+      height:44px;
+      padding:0 10px;
+      font-size:20px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      line-height:1;
+      transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .icon-btn:hover:not(:disabled){
+      transform:translateY(-1px);
+      box-shadow:0 6px 14px rgba(0,0,0,.08);
+    }
+
+    /* responsiveness */
+    @media (max-width: 768px){
+      .title-main{font-size:24px;}
+      .title-sub{font-size:17px;}
+      .brand-logo-wrap{
+        width:68px;
+        height:68px;
+        border-radius:18px;
+      }
+      .brand-logo{
+        max-width:50px;
+        max-height:50px;
+      }
+      .brand-left{
+        width:100%;
+      }
+      .header-actions{
+        width:100%;
+        justify-content:space-between;
+      }
+    }
   </style>
 </head>
 <body>
+  <div class="bg-grid"></div>
+
   <div class="app">
     <div class="header">
-      <h1 class="title">ตรวจสอบและยืนยันใบเสร็จน้ำมัน</h1>
-      <p class="subtitle">
-        อัปโหลดหลายไฟล์ → อ่าน OCR → ตรวจแก้ไข → ยืนยันบันทึก
-      </p>
+      <div class="brand">
+        <div class="brand-left">
+          <div class="brand-logo-wrap">
+            <img src="logo.png" alt="logo" class="brand-logo" />
+          </div>
 
-      <div class="top-summary">
-        <div class="chip">ทั้งหมด: <span id="countAll">0</span></div>
-        <div class="chip">พร้อมตรวจ: <span id="countReady">0</span></div>
-        <div class="chip">บันทึกแล้ว: <span id="countSaved">0</span></div>
-        <div class="chip">ผิดพลาด: <span id="countError">0</span></div>
+          <div class="brand-text">
+            <h1 class="title title-gradient title-main">ระบบตรวจสอบข้อมูลใบเสร็จการเติมน้ำมัน</h1>
+            <h2 class="title title-gradient title-sub">(Petroleum Receipt Analysis System)</h2>
+            <p class="subtitle">อัปโหลดหลายไฟล์ → OCR → ตรวจ/แก้ไข → ยืนยันบันทึก</p>
+
+            <div class="top-summary">
+              <div class="chip">ทั้งหมด: <span id="countAll">0</span></div>
+              <div class="chip">พร้อมตรวจ: <span id="countReady">0</span></div>
+              <div class="chip">บันทึกแล้ว: <span id="countSaved">0</span></div>
+              <div class="chip">ผิดพลาด: <span id="countError">0</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button
+            class="theme-toggle"
+            id="btnThemeToggle"
+            type="button"
+            aria-label="สลับโหมดสว่างและมืด"
+            aria-pressed="false"
+            title="สลับ Light / Dark mode"
+          >
+            <span class="theme-toggle-track"></span>
+            <span class="theme-toggle-label"><span>☀️</span><span>🌙</span></span>
+            <span class="theme-toggle-thumb">
+              <span class="theme-icon-sun">☀️</span>
+              <span class="theme-icon-moon">🌙</span>
+            </span>
+          </button>
+
+          <a
+            class="btn btn-sheet btn-link"
+            id="btnOpenSheet"
+            href="https://docs.google.com/spreadsheets/d/1R2kKi3os2a0MgqDiVtmfTq5n6frd69GnbMVWPToNH7M/edit"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="เปิด Google Sheet"
+            aria-label="เปิด Google Sheet"
+          >
+            📊 เปิด Google Sheet
+          </a>
+        </div>
       </div>
     </div>
 
     <div class="layout">
-      <!-- LEFT: UPLOAD + QUEUE -->
+      <!-- LEFT -->
       <div class="card">
         <div class="card-header">
           <h2 class="card-title">รายการไฟล์</h2>
           <p class="card-desc">อัปโหลดหลายไฟล์ แล้วเลือกไฟล์เพื่อตรวจสอบทีละรายการ</p>
         </div>
         <div class="card-body">
-          <label class="dropzone" id="dropzone" for="fileInput">
-            <strong>อัปโหลดไฟล์หลายรายการ</strong>
-            <p>ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์<br>รองรับรูปภาพและ PDF</p>
+          <label class="upload-panel" id="dropzone" for="fileInput">
             <input id="fileInput" class="hidden" type="file" accept="image/*,.pdf" multiple />
+
+            <div class="upload-top">
+              <div class="upload-icon-wrap">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 16V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M8.5 10.5L12 7l3.5 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M20 16.5v.8A2.7 2.7 0 0 1 17.3 20H6.7A2.7 2.7 0 0 1 4 17.3v-.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <div class="upload-text">
+                <div class="upload-title">อัปโหลดรูปภาพใบเสร็จหลายไฟล์</div>
+                <div class="upload-subtitle">
+                  แตะเพื่อเลือกไฟล์ หรือ ลากไฟล์มาวางที่นี่
+                </div>
+              </div>
+            </div>
+
+            <div class="upload-bottom">
+              <div class="upload-pill">รองรับรูปภาพ</div>
+              <div class="upload-pill">รองรับ PDF</div>
+              <div class="upload-pill">หลายไฟล์</div>
+            </div>
           </label>
 
           <div class="toolbar">
-            <button class="btn btn-primary" id="btnOcrCurrent" disabled> ตรวจสอบไฟล์นี้</button>
-            <button class="btn btn-secondary" id="btnOcrAll" disabled> ตรวจสอบไฟล์ทั้งหมด</button>
+            <button class="btn btn-primary" id="btnOcrCurrent" disabled>OCR ไฟล์นี้</button>
+            <button class="btn btn-secondary" id="btnOcrAll" disabled>OCR ทั้งหมด</button>
             <button class="btn btn-warning" id="btnSaveAllReady" disabled>บันทึกทั้งหมดที่พร้อม</button>
             <button class="btn btn-danger" id="btnClearAll">ล้างทั้งหมด</button>
           </div>
 
           <div id="globalStatus" class="status-panel"></div>
 
-          <div class="section-gap queue-list" id="queueList">
+          <div class="queue-list" id="queueList">
             <div class="empty-note">ยังไม่มีไฟล์ในรายการ</div>
           </div>
         </div>
       </div>
 
-      <!-- CENTER: PREVIEW -->
+      <!-- CENTER -->
       <div class="card">
         <div class="card-header">
-          <h2 class="card-title">ตัวอย่างไฟล์</h2>
-          <p class="card-desc">ดูไฟล์ที่กำลังเลือกอยู่</p>
+          <h2 class="card-title">ตัวอย่างไฟล์ + ข้อความ OCR</h2>
+          <p class="card-desc">รูปภาพใบเสร็จ</p>
         </div>
         <div class="card-body">
+          <div class="actions-row" style="margin-bottom:12px;">
+            <button class="btn btn-secondary icon-btn" id="btnRotateLeft" disabled title="หมุนซ้าย" aria-label="หมุนซ้าย">↶</button>
+            <button class="btn btn-secondary icon-btn" id="btnRotateRight" disabled title="หมุนขวา" aria-label="หมุนขวา">↷</button>
+            <button class="btn btn-secondary icon-btn" id="btnZoomOut" disabled title="ซูมออก" aria-label="ซูมออก">🔍−</button>
+            <button class="btn btn-secondary icon-btn" id="btnZoomIn" disabled title="ซูมเข้า" aria-label="ซูมเข้า">🔍+</button>
+            <button class="btn btn-secondary icon-btn" id="btnResetView" disabled title="รีเซ็ตมุมมอง" aria-label="รีเซ็ตมุมมอง">⟲</button>
+          </div>
+
           <div class="preview-box" id="previewBox">
-            <div class="preview-placeholder" id="previewPlaceholder">
-              ยังไม่ได้เลือกไฟล์
+            <div class="preview-placeholder" id="previewPlaceholder">ยังไม่ได้เลือกไฟล์</div>
+
+            <div class="preview-image-wrap hidden" id="previewImageWrap">
+              <img id="previewImage" alt="preview" />
             </div>
-            <img id="previewImage" class="hidden" alt="preview" />
+
             <div id="previewPdf" class="pdf-box hidden">
               <div class="icon">📄</div>
               <div id="previewPdfName" style="font-weight:800;"></div>
               <div class="small" style="margin-top:8px;">ไฟล์ PDF จะแสดงชื่อไฟล์แทน preview</div>
             </div>
           </div>
+
+          <div class="section-gap">
+            <div class="actions-row" style="margin-bottom:8px;">
+              <button class="btn btn-secondary" id="btnCopyOcrText" disabled>Copy OCR Text</button>
+            </div>
+            <div class="field">
+              <label for="ocrRawText">ข้อความ OCR (Raw Text)</label>
+              <textarea id="ocrRawText" readonly placeholder="เมื่อ OCR แล้ว ข้อความดิบจาก OCR จะแสดงที่นี่"></textarea>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- RIGHT: EDITOR -->
+      <!-- RIGHT -->
       <div class="card">
         <div class="card-header">
           <h2 class="card-title">ตรวจสอบ / แก้ไข / ยืนยัน</h2>
           <p class="card-desc">แก้ข้อมูลของไฟล์ที่เลือก แล้วกดยืนยันบันทึก</p>
         </div>
         <div class="card-body">
-          <div id="editorEmpty" class="empty-note">
-            เลือกไฟล์จากรายการด้านซ้ายก่อน
-          </div>
+          <div id="editorEmpty" class="empty-note">เลือกไฟล์จากรายการด้านซ้ายก่อน</div>
 
           <div id="editorPanel" class="hidden">
             <div class="actions-row" style="margin-bottom:14px;">
@@ -595,7 +1077,7 @@
             </div>
 
             <div class="small section-gap">
-              หมายเหตุ: หลัง OCR แล้วสามารถแก้ไขค่าทั้งหมดได้ก่อนกดยืนยันบันทึก
+              หาก LLM สกัดข้อมูลผิด สามารถ copy raw OCR text จากตรงกลางไปแก้ไขข้อมูลด้านขวาได้ทันที
             </div>
           </div>
         </div>
@@ -604,38 +1086,44 @@
   </div>
 
   <script>
-    /*********************************************************
-     * ใส่ URL ของ Apps Script Web App ตรงนี้
-     *********************************************************/
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyX_0DmrH5ma-yQoNqMB7OLVTFAbk4X8srYi6DwAApebXxm_PWS_bDNqZrILwl2bgeu/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZSbl_pL1VXwqC8iWUEHjkG6CkNuFfaNX3_bG3MbW1WROEkkPe77AEl9-EYFQ5RYB3/exec";
+    const THEME_KEY = "petroleum_receipt_theme";
 
-    /*********************************************************
-     * STATE
-     *********************************************************/
     const state = {
       items: [],
       selectedId: null,
       busy: false
     };
 
-    /*********************************************************
-     * ELEMENTS
-     *********************************************************/
     const els = {
-      fileInput: document.getElementById("fileInput"),
+      body: document.body,
       dropzone: document.getElementById("dropzone"),
+      fileInput: document.getElementById("fileInput"),
       queueList: document.getElementById("queueList"),
-      previewImage: document.getElementById("previewImage"),
-      previewPdf: document.getElementById("previewPdf"),
-      previewPdfName: document.getElementById("previewPdfName"),
-      previewPlaceholder: document.getElementById("previewPlaceholder"),
       globalStatus: document.getElementById("globalStatus"),
       itemStatus: document.getElementById("itemStatus"),
+
+      btnThemeToggle: document.getElementById("btnThemeToggle"),
 
       btnOcrCurrent: document.getElementById("btnOcrCurrent"),
       btnOcrAll: document.getElementById("btnOcrAll"),
       btnSaveAllReady: document.getElementById("btnSaveAllReady"),
       btnClearAll: document.getElementById("btnClearAll"),
+
+      previewPlaceholder: document.getElementById("previewPlaceholder"),
+      previewImageWrap: document.getElementById("previewImageWrap"),
+      previewImage: document.getElementById("previewImage"),
+      previewPdf: document.getElementById("previewPdf"),
+      previewPdfName: document.getElementById("previewPdfName"),
+
+      btnRotateLeft: document.getElementById("btnRotateLeft"),
+      btnRotateRight: document.getElementById("btnRotateRight"),
+      btnZoomOut: document.getElementById("btnZoomOut"),
+      btnZoomIn: document.getElementById("btnZoomIn"),
+      btnResetView: document.getElementById("btnResetView"),
+
+      btnCopyOcrText: document.getElementById("btnCopyOcrText"),
+      ocrRawText: document.getElementById("ocrRawText"),
 
       editorEmpty: document.getElementById("editorEmpty"),
       editorPanel: document.getElementById("editorPanel"),
@@ -665,37 +1153,36 @@
       sumTotal: document.getElementById("sumTotal")
     };
 
-    /*********************************************************
-     * INIT
-     *********************************************************/
     init();
 
     function init() {
+      applySavedTheme();
       bindEvents();
       renderAll();
     }
 
     function bindEvents() {
-      els.fileInput.addEventListener("change", (e) => {
-        addFiles(Array.from(e.target.files || []));
+      els.fileInput.addEventListener("change", async (e) => {
+        await addFiles(Array.from(e.target.files || []));
         els.fileInput.value = "";
       });
 
       els.dropzone.addEventListener("dragover", (e) => {
         e.preventDefault();
-        els.dropzone.classList.add("dragover");
+        els.dropzone.classList.add("is-dragover");
       });
 
       els.dropzone.addEventListener("dragleave", () => {
-        els.dropzone.classList.remove("dragover");
+        els.dropzone.classList.remove("is-dragover");
       });
 
-      els.dropzone.addEventListener("drop", (e) => {
+      els.dropzone.addEventListener("drop", async (e) => {
         e.preventDefault();
-        els.dropzone.classList.remove("dragover");
-        const files = Array.from(e.dataTransfer.files || []);
-        addFiles(files);
+        els.dropzone.classList.remove("is-dragover");
+        await addFiles(Array.from(e.dataTransfer.files || []));
       });
+
+      els.btnThemeToggle.addEventListener("click", toggleTheme);
 
       els.btnOcrCurrent.addEventListener("click", () => {
         const item = getSelectedItem();
@@ -717,21 +1204,57 @@
         input.addEventListener("input", () => {
           const item = getSelectedItem();
           if (!item) return;
-          item.formData[key] = key === "price_per_liter" || key === "liters" || key === "total_amount"
+          item.formData[key] = ["price_per_liter","liters","total_amount"].includes(key)
             ? toNumberSafe(input.value)
             : sanitizeText(input.value);
           updateSummary(item.formData);
         });
       });
+
+      els.btnRotateLeft.addEventListener("click", () => adjustRotation(-90));
+      els.btnRotateRight.addEventListener("click", () => adjustRotation(90));
+      els.btnZoomOut.addEventListener("click", () => adjustScale(-0.1));
+      els.btnZoomIn.addEventListener("click", () => adjustScale(0.1));
+      els.btnResetView.addEventListener("click", resetViewTransform);
+
+      els.btnCopyOcrText.addEventListener("click", async () => {
+        const item = getSelectedItem();
+        if (!item || !item.rawText) return;
+        try {
+          await navigator.clipboard.writeText(item.rawText);
+          showItemStatus("คัดลอกข้อความ OCR แล้ว", "success");
+        } catch (err) {
+          showItemStatus("คัดลอกไม่สำเร็จ: " + err.message, "error");
+        }
+      });
     }
 
-    /*********************************************************
-     * FILES
-     *********************************************************/
+    function applySavedTheme() {
+      const saved = localStorage.getItem(THEME_KEY);
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const isDark = saved ? saved === "dark" : prefersDark;
+
+      document.body.classList.toggle("theme-dark", isDark);
+      updateThemeButtonA11y(isDark);
+    }
+
+    function toggleTheme() {
+      const isDark = !document.body.classList.contains("theme-dark");
+      document.body.classList.toggle("theme-dark", isDark);
+      localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
+      updateThemeButtonA11y(isDark);
+    }
+
+    function updateThemeButtonA11y(isDark) {
+      if (!els.btnThemeToggle) return;
+      els.btnThemeToggle.setAttribute("aria-pressed", isDark ? "true" : "false");
+      els.btnThemeToggle.setAttribute("title", isDark ? "เปลี่ยนเป็น Light mode" : "เปลี่ยนเป็น Dark mode");
+    }
+
     async function addFiles(files) {
       if (!files.length) return;
 
-      const maxSize = 10 * 1024 * 1024; // 10MB ต่อไฟล์
+      const maxSize = 10 * 1024 * 1024;
       const validFiles = files.filter(f => f.size <= maxSize);
 
       if (!validFiles.length) {
@@ -741,8 +1264,9 @@
 
       for (const file of validFiles) {
         const base64 = await fileToBase64(file);
-        const item = {
-          id: cryptoRandomId(),
+        state.items.push({
+          id: randomId(),
+          requestId: randomId(),
           file,
           fileData: {
             name: file.name,
@@ -751,13 +1275,17 @@
             data: base64
           },
           previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : "",
-          status: "pending", // pending | processing | ready | saved | error
+          status: "pending",
           error: "",
           formData: defaultFormData(),
+          rawText: "",
           ocrDone: false,
-          saveResult: null
-        };
-        state.items.push(item);
+          saveResult: null,
+          view: {
+            rotation: 0,
+            scale: 1
+          }
+        });
       }
 
       if (!state.selectedId && state.items.length) {
@@ -782,25 +1310,16 @@
     function removeSelectedItem() {
       const item = getSelectedItem();
       if (!item) return;
-
       if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
 
       const idx = state.items.findIndex(x => x.id === item.id);
       if (idx >= 0) state.items.splice(idx, 1);
 
-      if (state.items.length) {
-        state.selectedId = state.items[Math.max(0, idx - 1)]?.id || state.items[0].id;
-      } else {
-        state.selectedId = null;
-      }
-
+      state.selectedId = state.items[Math.max(0, idx - 1)]?.id || state.items[0]?.id || null;
       clearItemStatus();
       renderAll();
     }
 
-    /*********************************************************
-     * OCR / SAVE
-     *********************************************************/
     async function ocrItem(itemId) {
       const item = state.items.find(x => x.id === itemId);
       if (!item) return;
@@ -810,10 +1329,12 @@
         item.status = "processing";
         item.error = "";
         renderAll();
+
         showItemStatus(`กำลังอ่าน OCR: ${item.file.name}`, "info");
 
         const result = await callBackendPost({
           action: "ocr",
+          requestId: item.requestId,
           payload: item.fileData
         });
 
@@ -821,6 +1342,7 @@
           throw new Error(result.error || "OCR ไม่สำเร็จ");
         }
 
+        item.rawText = result.raw_text || "";
         item.formData = normalizeFormData(result.data || {});
         item.ocrDone = true;
         item.status = "ready";
@@ -841,10 +1363,7 @@
 
     async function ocrAllItems() {
       if (!state.items.length) return;
-
-      const targets = state.items.filter(item =>
-        item.status === "pending" || item.status === "error"
-      );
+      const targets = state.items.filter(item => item.status === "pending" || item.status === "error");
 
       if (!targets.length) {
         showGlobalStatus("ไม่มีไฟล์ที่ต้อง OCR เพิ่ม", "warn");
@@ -862,7 +1381,6 @@
           showGlobalStatus(`กำลัง OCR (${i + 1}/${targets.length}) : ${item.file.name}`, "info");
           await ocrItem(item.id);
         }
-
         showGlobalStatus("OCR ครบทุกไฟล์ที่เลือกแล้ว", "success");
       } finally {
         setBusy(false);
@@ -883,11 +1401,11 @@
       try {
         setBusy(true);
         syncFormToItem(item);
-
         showItemStatus(`กำลังบันทึก: ${item.file.name}`, "info");
 
         const result = await callBackendPost({
           action: "save",
+          requestId: item.requestId,
           validatedData: item.formData,
           fileData: item.fileData
         });
@@ -903,11 +1421,11 @@
         renderAll();
         showItemStatus(
           `บันทึกสำเร็จ: ${item.file.name}\nแถวที่บันทึก: ${result.row || "-"}`
-          + (result.imageUrl ? `\nรูป: ${result.imageUrl}` : ""),
+          + (result.requestId ? `\nrequestId: ${result.requestId}` : ""),
           "success"
         );
 
-        selectNextPendingOrReady();
+        selectNextActionable();
       } catch (err) {
         console.error(err);
         item.status = "error";
@@ -920,9 +1438,7 @@
     }
 
     async function saveAllReadyItems() {
-      const targets = state.items.filter(item =>
-        item.status === "ready"
-      );
+      const targets = state.items.filter(item => item.status === "ready");
 
       if (!targets.length) {
         showGlobalStatus("ไม่มีไฟล์ที่พร้อมบันทึก", "warn");
@@ -946,9 +1462,6 @@
       }
     }
 
-    /*********************************************************
-     * BACKEND
-     *********************************************************/
     async function callBackendPost(bodyObj) {
       if (!SCRIPT_URL || SCRIPT_URL.includes("PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE")) {
         throw new Error("กรุณาใส่ SCRIPT_URL ในโค้ดก่อนใช้งาน");
@@ -975,13 +1488,10 @@
       return parsed;
     }
 
-    /*********************************************************
-     * RENDER
-     *********************************************************/
     function renderAll() {
       renderCounts();
       renderQueue();
-      renderSelectedPreview();
+      renderPreview();
       renderEditor();
       updateButtons();
     }
@@ -1001,9 +1511,7 @@
 
       els.queueList.innerHTML = state.items.map(item => {
         const active = item.id === state.selectedId ? "active" : "";
-        const badgeLabel = getStatusLabel(item.status);
         const sizeMb = (item.file.size / (1024 * 1024)).toFixed(2);
-
         return `
           <div class="queue-item ${active}" data-id="${item.id}">
             <div class="queue-top">
@@ -1014,7 +1522,7 @@
                   ${sizeMb} MB
                 </div>
               </div>
-              <span class="badge ${item.status}">${badgeLabel}</span>
+              <span class="badge ${item.status}">${escapeHtml(statusLabel(item.status))}</span>
             </div>
 
             ${item.error ? `<div class="queue-meta" style="color:#b91c1c;">${escapeHtml(item.error)}</div>` : ""}
@@ -1039,12 +1547,11 @@
       els.queueList.querySelectorAll('[data-action="remove"]').forEach(btn => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
-          const id = btn.dataset.id;
-          const item = state.items.find(x => x.id === id);
+          const item = state.items.find(x => x.id === btn.dataset.id);
           if (!item) return;
           if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
-          state.items = state.items.filter(x => x.id !== id);
-          if (state.selectedId === id) {
+          state.items = state.items.filter(x => x.id !== item.id);
+          if (state.selectedId === item.id) {
             state.selectedId = state.items[0]?.id || null;
           }
           renderAll();
@@ -1060,14 +1567,15 @@
       });
     }
 
-    function renderSelectedPreview() {
+    function renderPreview() {
       const item = getSelectedItem();
 
       if (!item) {
-        els.previewImage.classList.add("hidden");
-        els.previewPdf.classList.add("hidden");
         els.previewPlaceholder.classList.remove("hidden");
+        els.previewImageWrap.classList.add("hidden");
+        els.previewPdf.classList.add("hidden");
         els.previewPlaceholder.textContent = "ยังไม่ได้เลือกไฟล์";
+        els.ocrRawText.value = "";
         return;
       }
 
@@ -1076,20 +1584,23 @@
 
       if (isImage) {
         els.previewImage.src = item.previewUrl;
-        els.previewImage.classList.remove("hidden");
-        els.previewPdf.classList.add("hidden");
+        applyImageTransform(item);
         els.previewPlaceholder.classList.add("hidden");
+        els.previewImageWrap.classList.remove("hidden");
+        els.previewPdf.classList.add("hidden");
       } else if (isPdf) {
         els.previewPdfName.textContent = item.file.name;
-        els.previewPdf.classList.remove("hidden");
-        els.previewImage.classList.add("hidden");
         els.previewPlaceholder.classList.add("hidden");
+        els.previewImageWrap.classList.add("hidden");
+        els.previewPdf.classList.remove("hidden");
       } else {
-        els.previewImage.classList.add("hidden");
-        els.previewPdf.classList.add("hidden");
         els.previewPlaceholder.classList.remove("hidden");
         els.previewPlaceholder.textContent = item.file.name;
+        els.previewImageWrap.classList.add("hidden");
+        els.previewPdf.classList.add("hidden");
       }
+
+      els.ocrRawText.value = item.rawText || "";
     }
 
     function renderEditor() {
@@ -1124,6 +1635,7 @@
       const selected = getSelectedItem();
       const hasItems = state.items.length > 0;
       const hasReady = state.items.some(x => x.status === "ready");
+      const canViewImage = selected && (selected.file.type || "").startsWith("image/");
 
       els.btnOcrCurrent.disabled = state.busy || !selected;
       els.btnOcrSelected.disabled = state.busy || !selected;
@@ -1132,11 +1644,44 @@
       els.btnOcrAll.disabled = state.busy || !hasItems;
       els.btnSaveAllReady.disabled = state.busy || !hasReady;
       els.btnClearAll.disabled = state.busy || !hasItems;
+
+      els.btnRotateLeft.disabled = state.busy || !canViewImage;
+      els.btnRotateRight.disabled = state.busy || !canViewImage;
+      els.btnZoomIn.disabled = state.busy || !canViewImage;
+      els.btnZoomOut.disabled = state.busy || !canViewImage;
+      els.btnResetView.disabled = state.busy || !canViewImage;
+
+      els.btnCopyOcrText.disabled = !selected || !(selected.rawText || "");
     }
 
-    /*********************************************************
-     * HELPERS
-     *********************************************************/
+    function adjustRotation(delta) {
+      const item = getSelectedItem();
+      if (!item) return;
+      item.view.rotation = (item.view.rotation + delta) % 360;
+      applyImageTransform(item);
+    }
+
+    function adjustScale(delta) {
+      const item = getSelectedItem();
+      if (!item) return;
+      const next = Math.max(0.2, Math.min(4, (item.view.scale || 1) + delta));
+      item.view.scale = round3(next);
+      applyImageTransform(item);
+    }
+
+    function resetViewTransform() {
+      const item = getSelectedItem();
+      if (!item) return;
+      item.view.rotation = 0;
+      item.view.scale = 1;
+      applyImageTransform(item);
+    }
+
+    function applyImageTransform(item) {
+      if (!item) return;
+      els.previewImage.style.transform = `rotate(${item.view.rotation || 0}deg) scale(${item.view.scale || 1})`;
+    }
+
     function getSelectedItem() {
       return state.items.find(x => x.id === state.selectedId) || null;
     }
@@ -1146,7 +1691,7 @@
       updateButtons();
     }
 
-    function showGlobalStatus(message, type = "info") {
+    function showGlobalStatus(message, type="info") {
       els.globalStatus.className = `status-panel ${type}`;
       els.globalStatus.textContent = message;
     }
@@ -1156,7 +1701,7 @@
       els.globalStatus.textContent = "";
     }
 
-    function showItemStatus(message, type = "info") {
+    function showItemStatus(message, type="info") {
       els.itemStatus.className = `status-panel ${type}`;
       els.itemStatus.textContent = message;
     }
@@ -1195,7 +1740,6 @@
     }
 
     function syncFormToItem(item) {
-      if (!item) return;
       item.formData = {
         tax_invoice: sanitizeText(els.fields.tax_invoice.value),
         date: sanitizeText(els.fields.date.value),
@@ -1213,13 +1757,12 @@
       const total = toNumberSafe(formData?.total_amount);
       const net = round2(total / 1.07);
       const vat = round2(total - net);
-
       els.sumNet.textContent = formatNumber(net);
       els.sumVat.textContent = formatNumber(vat);
       els.sumTotal.textContent = formatNumber(total);
     }
 
-    function selectNextPendingOrReady() {
+    function selectNextActionable() {
       const next = state.items.find(x => x.status === "ready" || x.status === "pending" || x.status === "error");
       if (next) {
         state.selectedId = next.id;
@@ -1227,7 +1770,7 @@
       }
     }
 
-    function getStatusLabel(status) {
+    function statusLabel(status) {
       switch (status) {
         case "pending": return "รอ OCR";
         case "processing": return "กำลังทำงาน";
@@ -1245,7 +1788,7 @@
       return Number.isFinite(n) ? n : 0;
     }
 
-    function sanitizeText(v, fallback = "-") {
+    function sanitizeText(v, fallback="-") {
       const s = (v ?? "").toString().trim();
       return s || fallback;
     }
@@ -1255,6 +1798,11 @@
       return Math.round((x + Number.EPSILON) * 100) / 100;
     }
 
+    function round3(n) {
+      const x = Number(n || 0);
+      return Math.round((x + Number.EPSILON) * 1000) / 1000;
+    }
+
     function formatNumber(n) {
       return Number(n || 0).toLocaleString("th-TH", {
         minimumFractionDigits: 2,
@@ -1262,7 +1810,7 @@
       });
     }
 
-    function cryptoRandomId() {
+    function randomId() {
       return "id_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
     }
 
