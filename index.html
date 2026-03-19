@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ตรวจสอบใบเสร็จน้ำมัน</title>
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --primary:#2563eb;
+      --primary-2:#1d4ed8;
+      --success:#16a34a;
+      --warning:#d97706;
+      --danger:#dc2626;
+      --pending:#64748b;
+      --ready:#2563eb;
+      --saved:#16a34a;
+      --error:#dc2626;
+      --shadow:0 10px 30px rgba(0,0,0,.08);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Thai", sans-serif;
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+      color:var(--text);
+    }
+
+    .app{
+      max-width: 1320px;
+      margin: 24px auto;
+      padding: 0 16px 28px;
+    }
+
+    .header{
+      margin-bottom: 18px;
+    }
+
+    .title{
+      font-size: 30px;
+      font-weight: 800;
+      margin:0 0 6px;
+    }
+
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 360px 1fr 430px;
+      gap:16px;
+      align-items:start;
+    }
+
+    @media (max-width: 1200px){
+      .layout{
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .card-header{
+      padding:18px 18px 12px;
+      border-bottom:1px solid #f1f5f9;
+    }
+
+    .card-title{
+      margin:0 0 4px;
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .card-desc{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .card-body{
+      padding:18px;
+    }
+
+    .dropzone{
+      border:2px dashed #cbd5e1;
+      border-radius:18px;
+      background:#f8fafc;
+      padding:24px 16px;
+      text-align:center;
+      transition:.2s ease;
+      cursor:pointer;
+    }
+
+    .dropzone.dragover{
+      border-color:#60a5fa;
+      background:#eff6ff;
+    }
+
+    .dropzone strong{
+      display:block;
+      margin-bottom:6px;
+      font-size:16px;
+    }
+
+    .dropzone p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:12px 15px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .btn-primary:hover:not(:disabled){
+      background:var(--primary-2);
+    }
+
+    .btn-secondary{
+      background:#eef2ff;
+      color:#3730a3;
+    }
+
+    .btn-secondary:hover:not(:disabled){
+      background:#e0e7ff;
+    }
+
+    .btn-success{
+      background:var(--success);
+      color:#fff;
+    }
+
+    .btn-danger{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+
+    .btn-warning{
+      background:#fff7ed;
+      color:#9a3412;
+    }
+
+    .queue-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height: 70vh;
+      overflow:auto;
+      padding-right:2px;
+    }
+
+    .queue-item{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .queue-item:hover{
+      border-color:#bfdbfe;
+      box-shadow:0 6px 18px rgba(37,99,235,.08);
+    }
+
+    .queue-item.active{
+      border-color:#60a5fa;
+      background:#eff6ff;
+    }
+
+    .queue-top{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:flex-start;
+      margin-bottom:6px;
+    }
+
+    .queue-name{
+      font-size:14px;
+      font-weight:700;
+      line-height:1.4;
+      word-break:break-word;
+    }
+
+    .queue-meta{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      padding:4px 10px;
+      font-size:11px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .badge.pending{background:#f1f5f9;color:#475569;}
+    .badge.processing{background:#dbeafe;color:#1d4ed8;}
+    .badge.ready{background:#dbeafe;color:#1d4ed8;}
+    .badge.saved{background:#dcfce7;color:#166534;}
+    .badge.error{background:#fee2e2;color:#991b1b;}
+
+    .queue-actions{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .mini-btn{
+      border:none;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .mini-btn.remove{
+      background:#fef2f2;
+      color:#991b1b;
+    }
+
+    .mini-btn.select{
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    .preview-box{
+      min-height: 520px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#f8fafc;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .preview-box img{
+      max-width:100%;
+      max-height:700px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .preview-placeholder{
+      text-align:center;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.7;
+      padding:28px;
+    }
+
+    .pdf-box{
+      text-align:center;
+      padding:28px;
+    }
+
+    .pdf-box .icon{
+      font-size:64px;
+      margin-bottom:12px;
+    }
+
+    .section-gap{
+      margin-top:16px;
+    }
+
+    .status-panel{
+      display:none;
+      margin-top:14px;
+      border-radius:14px;
+      padding:12px 14px;
+      font-size:14px;
+      white-space:pre-wrap;
+      line-height:1.6;
+    }
+
+    .status-panel.info{display:block;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+    .status-panel.success{display:block;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
+    .status-panel.error{display:block;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;}
+    .status-panel.warn{display:block;background:#fffbeb;color:#92400e;border:1px solid #fde68a;}
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    @media (max-width: 680px){
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:12px;
+    }
+
+    .field.full{
+      grid-column:1 / -1;
+    }
+
+    .field label{
+      font-size:13px;
+      font-weight:700;
+      color:#374151;
+    }
+
+    .field input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:14px;
+      outline:none;
+      background:#fff;
+    }
+
+    .field input:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(59,130,246,.12);
+    }
+
+    .summary{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+      margin-top:10px;
+    }
+
+    @media (max-width: 680px){
+      .summary{
+        grid-template-columns:1fr;
+      }
+    }
+
+    .summary-card{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:#fafafa;
+    }
+
+    .summary-label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .summary-value{
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .empty-note{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.7;
+      text-align:center;
+      padding:20px;
+    }
+
+    .top-summary{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      color:#475569;
+      font-weight:700;
+    }
+
+    .actions-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .small{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <h1 class="title">ตรวจสอบและยืนยันใบเสร็จน้ำมัน</h1>
+      <p class="subtitle">
+        อัปโหลดหลายไฟล์ → อ่าน OCR → ตรวจแก้ไข → ยืนยันบันทึก
+      </p>
+
+      <div class="top-summary">
+        <div class="chip">ทั้งหมด: <span id="countAll">0</span></div>
+        <div class="chip">พร้อมตรวจ: <span id="countReady">0</span></div>
+        <div class="chip">บันทึกแล้ว: <span id="countSaved">0</span></div>
+        <div class="chip">ผิดพลาด: <span id="countError">0</span></div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- LEFT: UPLOAD + QUEUE -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">รายการไฟล์</h2>
+          <p class="card-desc">อัปโหลดหลายไฟล์ แล้วเลือกไฟล์เพื่อตรวจสอบทีละรายการ</p>
+        </div>
+        <div class="card-body">
+          <label class="dropzone" id="dropzone" for="fileInput">
+            <strong>อัปโหลดไฟล์หลายรายการ</strong>
+            <p>ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์<br>รองรับรูปภาพและ PDF</p>
+            <input id="fileInput" class="hidden" type="file" accept="image/*,.pdf" multiple />
+          </label>
+
+          <div class="toolbar">
+            <button class="btn btn-primary" id="btnOcrCurrent" disabled> ตรวจสอบไฟล์นี้</button>
+            <button class="btn btn-secondary" id="btnOcrAll" disabled> ตรวจสอบไฟล์ทั้งหมด</button>
+            <button class="btn btn-warning" id="btnSaveAllReady" disabled>บันทึกทั้งหมดที่พร้อม</button>
+            <button class="btn btn-danger" id="btnClearAll">ล้างทั้งหมด</button>
+          </div>
+
+          <div id="globalStatus" class="status-panel"></div>
+
+          <div class="section-gap queue-list" id="queueList">
+            <div class="empty-note">ยังไม่มีไฟล์ในรายการ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER: PREVIEW -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">ตัวอย่างไฟล์</h2>
+          <p class="card-desc">ดูไฟล์ที่กำลังเลือกอยู่</p>
+        </div>
+        <div class="card-body">
+          <div class="preview-box" id="previewBox">
+            <div class="preview-placeholder" id="previewPlaceholder">
+              ยังไม่ได้เลือกไฟล์
+            </div>
+            <img id="previewImage" class="hidden" alt="preview" />
+            <div id="previewPdf" class="pdf-box hidden">
+              <div class="icon">📄</div>
+              <div id="previewPdfName" style="font-weight:800;"></div>
+              <div class="small" style="margin-top:8px;">ไฟล์ PDF จะแสดงชื่อไฟล์แทน preview</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: EDITOR -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">ตรวจสอบ / แก้ไข / ยืนยัน</h2>
+          <p class="card-desc">แก้ข้อมูลของไฟล์ที่เลือก แล้วกดยืนยันบันทึก</p>
+        </div>
+        <div class="card-body">
+          <div id="editorEmpty" class="empty-note">
+            เลือกไฟล์จากรายการด้านซ้ายก่อน
+          </div>
+
+          <div id="editorPanel" class="hidden">
+            <div class="actions-row" style="margin-bottom:14px;">
+              <button class="btn btn-primary" id="btnOcrSelected">OCR ไฟล์ที่เลือก</button>
+              <button class="btn btn-success" id="btnSaveSelected">ยืนยันและบันทึกไฟล์นี้</button>
+              <button class="btn btn-danger" id="btnRemoveSelected">ลบไฟล์นี้</button>
+            </div>
+
+            <div id="itemStatus" class="status-panel"></div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label for="tax_invoice">เลขที่ใบกำกับภาษี</label>
+                <input id="tax_invoice" type="text" />
+              </div>
+
+              <div class="field">
+                <label for="date">วันที่</label>
+                <input id="date" type="text" placeholder="เช่น 01/02/2026 หรือ 1 ก.พ. 2569" />
+              </div>
+
+              <div class="field full">
+                <label for="company">บริษัท / ปั๊มน้ำมัน</label>
+                <input id="company" type="text" />
+              </div>
+
+              <div class="field">
+                <label for="fuel_type">ประเภทน้ำมัน</label>
+                <input id="fuel_type" type="text" />
+              </div>
+
+              <div class="field">
+                <label for="car_plate">ทะเบียนรถ</label>
+                <input id="car_plate" type="text" />
+              </div>
+
+              <div class="field">
+                <label for="price_per_liter">ราคาต่อลิตร</label>
+                <input id="price_per_liter" type="number" step="0.01" />
+              </div>
+
+              <div class="field">
+                <label for="liters">จำนวนลิตร</label>
+                <input id="liters" type="number" step="0.001" />
+              </div>
+
+              <div class="field">
+                <label for="total_amount">ยอดรวม</label>
+                <input id="total_amount" type="number" step="0.01" />
+              </div>
+
+              <div class="field">
+                <label for="mileage">เลขไมล์</label>
+                <input id="mileage" type="text" />
+              </div>
+            </div>
+
+            <div class="summary">
+              <div class="summary-card">
+                <div class="summary-label">ยอดก่อน VAT (ประมาณ)</div>
+                <div class="summary-value" id="sumNet">0.00</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-label">VAT 7% (ประมาณ)</div>
+                <div class="summary-value" id="sumVat">0.00</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-label">ยอดรวม</div>
+                <div class="summary-value" id="sumTotal">0.00</div>
+              </div>
+            </div>
+
+            <div class="small section-gap">
+              หมายเหตุ: หลัง OCR แล้วสามารถแก้ไขค่าทั้งหมดได้ก่อนกดยืนยันบันทึก
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*********************************************************
+     * ใส่ URL ของ Apps Script Web App ตรงนี้
+     *********************************************************/
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyX_0DmrH5ma-yQoNqMB7OLVTFAbk4X8srYi6DwAApebXxm_PWS_bDNqZrILwl2bgeu/exec";
+
+    /*********************************************************
+     * STATE
+     *********************************************************/
+    const state = {
+      items: [],
+      selectedId: null,
+      busy: false
+    };
+
+    /*********************************************************
+     * ELEMENTS
+     *********************************************************/
+    const els = {
+      fileInput: document.getElementById("fileInput"),
+      dropzone: document.getElementById("dropzone"),
+      queueList: document.getElementById("queueList"),
+      previewImage: document.getElementById("previewImage"),
+      previewPdf: document.getElementById("previewPdf"),
+      previewPdfName: document.getElementById("previewPdfName"),
+      previewPlaceholder: document.getElementById("previewPlaceholder"),
+      globalStatus: document.getElementById("globalStatus"),
+      itemStatus: document.getElementById("itemStatus"),
+
+      btnOcrCurrent: document.getElementById("btnOcrCurrent"),
+      btnOcrAll: document.getElementById("btnOcrAll"),
+      btnSaveAllReady: document.getElementById("btnSaveAllReady"),
+      btnClearAll: document.getElementById("btnClearAll"),
+
+      editorEmpty: document.getElementById("editorEmpty"),
+      editorPanel: document.getElementById("editorPanel"),
+      btnOcrSelected: document.getElementById("btnOcrSelected"),
+      btnSaveSelected: document.getElementById("btnSaveSelected"),
+      btnRemoveSelected: document.getElementById("btnRemoveSelected"),
+
+      countAll: document.getElementById("countAll"),
+      countReady: document.getElementById("countReady"),
+      countSaved: document.getElementById("countSaved"),
+      countError: document.getElementById("countError"),
+
+      fields: {
+        tax_invoice: document.getElementById("tax_invoice"),
+        date: document.getElementById("date"),
+        company: document.getElementById("company"),
+        fuel_type: document.getElementById("fuel_type"),
+        price_per_liter: document.getElementById("price_per_liter"),
+        liters: document.getElementById("liters"),
+        total_amount: document.getElementById("total_amount"),
+        car_plate: document.getElementById("car_plate"),
+        mileage: document.getElementById("mileage")
+      },
+
+      sumNet: document.getElementById("sumNet"),
+      sumVat: document.getElementById("sumVat"),
+      sumTotal: document.getElementById("sumTotal")
+    };
+
+    /*********************************************************
+     * INIT
+     *********************************************************/
+    init();
+
+    function init() {
+      bindEvents();
+      renderAll();
+    }
+
+    function bindEvents() {
+      els.fileInput.addEventListener("change", (e) => {
+        addFiles(Array.from(e.target.files || []));
+        els.fileInput.value = "";
+      });
+
+      els.dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        els.dropzone.classList.add("dragover");
+      });
+
+      els.dropzone.addEventListener("dragleave", () => {
+        els.dropzone.classList.remove("dragover");
+      });
+
+      els.dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        els.dropzone.classList.remove("dragover");
+        const files = Array.from(e.dataTransfer.files || []);
+        addFiles(files);
+      });
+
+      els.btnOcrCurrent.addEventListener("click", () => {
+        const item = getSelectedItem();
+        if (item) ocrItem(item.id);
+      });
+
+      els.btnOcrSelected.addEventListener("click", () => {
+        const item = getSelectedItem();
+        if (item) ocrItem(item.id);
+      });
+
+      els.btnOcrAll.addEventListener("click", ocrAllItems);
+      els.btnSaveSelected.addEventListener("click", saveSelectedItem);
+      els.btnSaveAllReady.addEventListener("click", saveAllReadyItems);
+      els.btnRemoveSelected.addEventListener("click", removeSelectedItem);
+      els.btnClearAll.addEventListener("click", clearAllItems);
+
+      Object.entries(els.fields).forEach(([key, input]) => {
+        input.addEventListener("input", () => {
+          const item = getSelectedItem();
+          if (!item) return;
+          item.formData[key] = key === "price_per_liter" || key === "liters" || key === "total_amount"
+            ? toNumberSafe(input.value)
+            : sanitizeText(input.value);
+          updateSummary(item.formData);
+        });
+      });
+    }
+
+    /*********************************************************
+     * FILES
+     *********************************************************/
+    async function addFiles(files) {
+      if (!files.length) return;
+
+      const maxSize = 10 * 1024 * 1024; // 10MB ต่อไฟล์
+      const validFiles = files.filter(f => f.size <= maxSize);
+
+      if (!validFiles.length) {
+        showGlobalStatus("ไม่มีไฟล์ที่ใช้งานได้ หรือไฟล์ใหญ่เกิน 10MB", "warn");
+        return;
+      }
+
+      for (const file of validFiles) {
+        const base64 = await fileToBase64(file);
+        const item = {
+          id: cryptoRandomId(),
+          file,
+          fileData: {
+            name: file.name,
+            type: file.type || guessMimeTypeByName(file.name),
+            size: file.size,
+            data: base64
+          },
+          previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : "",
+          status: "pending", // pending | processing | ready | saved | error
+          error: "",
+          formData: defaultFormData(),
+          ocrDone: false,
+          saveResult: null
+        };
+        state.items.push(item);
+      }
+
+      if (!state.selectedId && state.items.length) {
+        state.selectedId = state.items[0].id;
+      }
+
+      renderAll();
+      showGlobalStatus(`เพิ่มไฟล์แล้ว ${validFiles.length} ไฟล์`, "success");
+    }
+
+    function clearAllItems() {
+      state.items.forEach(item => {
+        if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+      });
+      state.items = [];
+      state.selectedId = null;
+      clearGlobalStatus();
+      clearItemStatus();
+      renderAll();
+    }
+
+    function removeSelectedItem() {
+      const item = getSelectedItem();
+      if (!item) return;
+
+      if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+
+      const idx = state.items.findIndex(x => x.id === item.id);
+      if (idx >= 0) state.items.splice(idx, 1);
+
+      if (state.items.length) {
+        state.selectedId = state.items[Math.max(0, idx - 1)]?.id || state.items[0].id;
+      } else {
+        state.selectedId = null;
+      }
+
+      clearItemStatus();
+      renderAll();
+    }
+
+    /*********************************************************
+     * OCR / SAVE
+     *********************************************************/
+    async function ocrItem(itemId) {
+      const item = state.items.find(x => x.id === itemId);
+      if (!item) return;
+
+      try {
+        setBusy(true);
+        item.status = "processing";
+        item.error = "";
+        renderAll();
+        showItemStatus(`กำลังอ่าน OCR: ${item.file.name}`, "info");
+
+        const result = await callBackendPost({
+          action: "ocr",
+          payload: item.fileData
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || "OCR ไม่สำเร็จ");
+        }
+
+        item.formData = normalizeFormData(result.data || {});
+        item.ocrDone = true;
+        item.status = "ready";
+        item.error = "";
+
+        renderAll();
+        showItemStatus(`OCR สำเร็จ: ${item.file.name}\nตรวจสอบข้อมูลแล้วกดยืนยันบันทึกได้เลย`, "success");
+      } catch (err) {
+        console.error(err);
+        item.status = "error";
+        item.error = err.message || String(err);
+        renderAll();
+        showItemStatus(`OCR ล้มเหลว: ${item.file.name}\n${item.error}`, "error");
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function ocrAllItems() {
+      if (!state.items.length) return;
+
+      const targets = state.items.filter(item =>
+        item.status === "pending" || item.status === "error"
+      );
+
+      if (!targets.length) {
+        showGlobalStatus("ไม่มีไฟล์ที่ต้อง OCR เพิ่ม", "warn");
+        return;
+      }
+
+      setBusy(true);
+      clearGlobalStatus();
+
+      try {
+        for (let i = 0; i < targets.length; i++) {
+          const item = targets[i];
+          state.selectedId = item.id;
+          renderAll();
+          showGlobalStatus(`กำลัง OCR (${i + 1}/${targets.length}) : ${item.file.name}`, "info");
+          await ocrItem(item.id);
+        }
+
+        showGlobalStatus("OCR ครบทุกไฟล์ที่เลือกแล้ว", "success");
+      } finally {
+        setBusy(false);
+        renderAll();
+      }
+    }
+
+    async function saveSelectedItem() {
+      const item = getSelectedItem();
+      if (!item) return;
+      await saveItem(item.id);
+    }
+
+    async function saveItem(itemId) {
+      const item = state.items.find(x => x.id === itemId);
+      if (!item) return;
+
+      try {
+        setBusy(true);
+        syncFormToItem(item);
+
+        showItemStatus(`กำลังบันทึก: ${item.file.name}`, "info");
+
+        const result = await callBackendPost({
+          action: "save",
+          validatedData: item.formData,
+          fileData: item.fileData
+        });
+
+        if (!result.success) {
+          throw new Error(result.error || "บันทึกข้อมูลไม่สำเร็จ");
+        }
+
+        item.status = "saved";
+        item.error = "";
+        item.saveResult = result;
+
+        renderAll();
+        showItemStatus(
+          `บันทึกสำเร็จ: ${item.file.name}\nแถวที่บันทึก: ${result.row || "-"}`
+          + (result.imageUrl ? `\nรูป: ${result.imageUrl}` : ""),
+          "success"
+        );
+
+        selectNextPendingOrReady();
+      } catch (err) {
+        console.error(err);
+        item.status = "error";
+        item.error = err.message || String(err);
+        renderAll();
+        showItemStatus(`บันทึกล้มเหลว: ${item.file.name}\n${item.error}`, "error");
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function saveAllReadyItems() {
+      const targets = state.items.filter(item =>
+        item.status === "ready"
+      );
+
+      if (!targets.length) {
+        showGlobalStatus("ไม่มีไฟล์ที่พร้อมบันทึก", "warn");
+        return;
+      }
+
+      setBusy(true);
+
+      try {
+        for (let i = 0; i < targets.length; i++) {
+          const item = targets[i];
+          state.selectedId = item.id;
+          renderAll();
+          showGlobalStatus(`กำลังบันทึก (${i + 1}/${targets.length}) : ${item.file.name}`, "info");
+          await saveItem(item.id);
+        }
+        showGlobalStatus("บันทึกครบทุกไฟล์ที่พร้อมแล้ว", "success");
+      } finally {
+        setBusy(false);
+        renderAll();
+      }
+    }
+
+    /*********************************************************
+     * BACKEND
+     *********************************************************/
+    async function callBackendPost(bodyObj) {
+      if (!SCRIPT_URL || SCRIPT_URL.includes("PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE")) {
+        throw new Error("กรุณาใส่ SCRIPT_URL ในโค้ดก่อนใช้งาน");
+      }
+
+      const resp = await fetch(SCRIPT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(bodyObj),
+        redirect: "follow"
+      });
+
+      const text = await resp.text();
+
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (err) {
+        throw new Error("Backend ไม่ได้ส่ง JSON กลับมา: " + text);
+      }
+
+      return parsed;
+    }
+
+    /*********************************************************
+     * RENDER
+     *********************************************************/
+    function renderAll() {
+      renderCounts();
+      renderQueue();
+      renderSelectedPreview();
+      renderEditor();
+      updateButtons();
+    }
+
+    function renderCounts() {
+      els.countAll.textContent = state.items.length;
+      els.countReady.textContent = state.items.filter(x => x.status === "ready").length;
+      els.countSaved.textContent = state.items.filter(x => x.status === "saved").length;
+      els.countError.textContent = state.items.filter(x => x.status === "error").length;
+    }
+
+    function renderQueue() {
+      if (!state.items.length) {
+        els.queueList.innerHTML = `<div class="empty-note">ยังไม่มีไฟล์ในรายการ</div>`;
+        return;
+      }
+
+      els.queueList.innerHTML = state.items.map(item => {
+        const active = item.id === state.selectedId ? "active" : "";
+        const badgeLabel = getStatusLabel(item.status);
+        const sizeMb = (item.file.size / (1024 * 1024)).toFixed(2);
+
+        return `
+          <div class="queue-item ${active}" data-id="${item.id}">
+            <div class="queue-top">
+              <div>
+                <div class="queue-name">${escapeHtml(item.file.name)}</div>
+                <div class="queue-meta">
+                  ${escapeHtml(item.file.type || guessMimeTypeByName(item.file.name))}<br>
+                  ${sizeMb} MB
+                </div>
+              </div>
+              <span class="badge ${item.status}">${badgeLabel}</span>
+            </div>
+
+            ${item.error ? `<div class="queue-meta" style="color:#b91c1c;">${escapeHtml(item.error)}</div>` : ""}
+
+            <div class="queue-actions">
+              <button class="mini-btn select" data-action="select" data-id="${item.id}">เลือก</button>
+              <button class="mini-btn remove" data-action="remove" data-id="${item.id}">ลบ</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      els.queueList.querySelectorAll('[data-action="select"]').forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          state.selectedId = btn.dataset.id;
+          clearItemStatus();
+          renderAll();
+        });
+      });
+
+      els.queueList.querySelectorAll('[data-action="remove"]').forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          const item = state.items.find(x => x.id === id);
+          if (!item) return;
+          if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+          state.items = state.items.filter(x => x.id !== id);
+          if (state.selectedId === id) {
+            state.selectedId = state.items[0]?.id || null;
+          }
+          renderAll();
+        });
+      });
+
+      els.queueList.querySelectorAll(".queue-item").forEach(card => {
+        card.addEventListener("click", () => {
+          state.selectedId = card.dataset.id;
+          clearItemStatus();
+          renderAll();
+        });
+      });
+    }
+
+    function renderSelectedPreview() {
+      const item = getSelectedItem();
+
+      if (!item) {
+        els.previewImage.classList.add("hidden");
+        els.previewPdf.classList.add("hidden");
+        els.previewPlaceholder.classList.remove("hidden");
+        els.previewPlaceholder.textContent = "ยังไม่ได้เลือกไฟล์";
+        return;
+      }
+
+      const isImage = (item.file.type || "").startsWith("image/");
+      const isPdf = (item.file.type || "").includes("pdf") || item.file.name.toLowerCase().endsWith(".pdf");
+
+      if (isImage) {
+        els.previewImage.src = item.previewUrl;
+        els.previewImage.classList.remove("hidden");
+        els.previewPdf.classList.add("hidden");
+        els.previewPlaceholder.classList.add("hidden");
+      } else if (isPdf) {
+        els.previewPdfName.textContent = item.file.name;
+        els.previewPdf.classList.remove("hidden");
+        els.previewImage.classList.add("hidden");
+        els.previewPlaceholder.classList.add("hidden");
+      } else {
+        els.previewImage.classList.add("hidden");
+        els.previewPdf.classList.add("hidden");
+        els.previewPlaceholder.classList.remove("hidden");
+        els.previewPlaceholder.textContent = item.file.name;
+      }
+    }
+
+    function renderEditor() {
+      const item = getSelectedItem();
+
+      if (!item) {
+        els.editorEmpty.classList.remove("hidden");
+        els.editorPanel.classList.add("hidden");
+        return;
+      }
+
+      els.editorEmpty.classList.add("hidden");
+      els.editorPanel.classList.remove("hidden");
+
+      fillEditor(item.formData);
+      updateSummary(item.formData);
+    }
+
+    function fillEditor(data) {
+      els.fields.tax_invoice.value = data.tax_invoice ?? "-";
+      els.fields.date.value = data.date ?? "-";
+      els.fields.company.value = data.company ?? "-";
+      els.fields.fuel_type.value = data.fuel_type ?? "-";
+      els.fields.price_per_liter.value = data.price_per_liter ?? 0;
+      els.fields.liters.value = data.liters ?? 0;
+      els.fields.total_amount.value = data.total_amount ?? 0;
+      els.fields.car_plate.value = data.car_plate ?? "-";
+      els.fields.mileage.value = data.mileage ?? "-";
+    }
+
+    function updateButtons() {
+      const selected = getSelectedItem();
+      const hasItems = state.items.length > 0;
+      const hasReady = state.items.some(x => x.status === "ready");
+
+      els.btnOcrCurrent.disabled = state.busy || !selected;
+      els.btnOcrSelected.disabled = state.busy || !selected;
+      els.btnSaveSelected.disabled = state.busy || !selected;
+      els.btnRemoveSelected.disabled = state.busy || !selected;
+      els.btnOcrAll.disabled = state.busy || !hasItems;
+      els.btnSaveAllReady.disabled = state.busy || !hasReady;
+      els.btnClearAll.disabled = state.busy || !hasItems;
+    }
+
+    /*********************************************************
+     * HELPERS
+     *********************************************************/
+    function getSelectedItem() {
+      return state.items.find(x => x.id === state.selectedId) || null;
+    }
+
+    function setBusy(flag) {
+      state.busy = !!flag;
+      updateButtons();
+    }
+
+    function showGlobalStatus(message, type = "info") {
+      els.globalStatus.className = `status-panel ${type}`;
+      els.globalStatus.textContent = message;
+    }
+
+    function clearGlobalStatus() {
+      els.globalStatus.className = "status-panel";
+      els.globalStatus.textContent = "";
+    }
+
+    function showItemStatus(message, type = "info") {
+      els.itemStatus.className = `status-panel ${type}`;
+      els.itemStatus.textContent = message;
+    }
+
+    function clearItemStatus() {
+      els.itemStatus.className = "status-panel";
+      els.itemStatus.textContent = "";
+    }
+
+    function defaultFormData() {
+      return {
+        tax_invoice: "-",
+        date: "-",
+        company: "-",
+        fuel_type: "-",
+        price_per_liter: 0,
+        liters: 0,
+        total_amount: 0,
+        car_plate: "-",
+        mileage: "-"
+      };
+    }
+
+    function normalizeFormData(data = {}) {
+      return {
+        tax_invoice: sanitizeText(data.tax_invoice),
+        date: sanitizeText(data.date),
+        company: sanitizeText(data.company),
+        fuel_type: sanitizeText(data.fuel_type),
+        price_per_liter: toNumberSafe(data.price_per_liter),
+        liters: toNumberSafe(data.liters),
+        total_amount: toNumberSafe(data.total_amount),
+        car_plate: sanitizeText(data.car_plate),
+        mileage: sanitizeText(data.mileage)
+      };
+    }
+
+    function syncFormToItem(item) {
+      if (!item) return;
+      item.formData = {
+        tax_invoice: sanitizeText(els.fields.tax_invoice.value),
+        date: sanitizeText(els.fields.date.value),
+        company: sanitizeText(els.fields.company.value),
+        fuel_type: sanitizeText(els.fields.fuel_type.value),
+        price_per_liter: toNumberSafe(els.fields.price_per_liter.value),
+        liters: toNumberSafe(els.fields.liters.value),
+        total_amount: toNumberSafe(els.fields.total_amount.value),
+        car_plate: sanitizeText(els.fields.car_plate.value),
+        mileage: sanitizeText(els.fields.mileage.value)
+      };
+    }
+
+    function updateSummary(formData) {
+      const total = toNumberSafe(formData?.total_amount);
+      const net = round2(total / 1.07);
+      const vat = round2(total - net);
+
+      els.sumNet.textContent = formatNumber(net);
+      els.sumVat.textContent = formatNumber(vat);
+      els.sumTotal.textContent = formatNumber(total);
+    }
+
+    function selectNextPendingOrReady() {
+      const next = state.items.find(x => x.status === "ready" || x.status === "pending" || x.status === "error");
+      if (next) {
+        state.selectedId = next.id;
+        renderAll();
+      }
+    }
+
+    function getStatusLabel(status) {
+      switch (status) {
+        case "pending": return "รอ OCR";
+        case "processing": return "กำลังทำงาน";
+        case "ready": return "พร้อมบันทึก";
+        case "saved": return "บันทึกแล้ว";
+        case "error": return "ผิดพลาด";
+        default: return status;
+      }
+    }
+
+    function toNumberSafe(v) {
+      if (v === null || v === undefined || v === "") return 0;
+      const s = String(v).replace(/,/g, "").trim();
+      const n = Number(s);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function sanitizeText(v, fallback = "-") {
+      const s = (v ?? "").toString().trim();
+      return s || fallback;
+    }
+
+    function round2(n) {
+      const x = Number(n || 0);
+      return Math.round((x + Number.EPSILON) * 100) / 100;
+    }
+
+    function formatNumber(n) {
+      return Number(n || 0).toLocaleString("th-TH", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function cryptoRandomId() {
+      return "id_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    function guessMimeTypeByName(name) {
+      const n = String(name || "").toLowerCase();
+      if (n.endsWith(".png")) return "image/png";
+      if (n.endsWith(".jpg") || n.endsWith(".jpeg")) return "image/jpeg";
+      if (n.endsWith(".webp")) return "image/webp";
+      if (n.endsWith(".heic")) return "image/heic";
+      if (n.endsWith(".pdf")) return "application/pdf";
+      return "application/octet-stream";
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result || "";
+          const base64 = String(result).split(",")[1] || "";
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
+</body>
+</html>
